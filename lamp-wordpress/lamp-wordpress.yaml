@@ -25,38 +25,51 @@ Parameters:
     Default: 0.0.0.0/0
     AllowedPattern: '(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})/(\d{1,2})'
     ConstraintDescription: must be a valid IP CIDR range of the form x.x.x.x/x.
-  # DBName:
-  #   Default: wordpressdb
-  #   Description: The WordPress database name
-  #   Type: String
-  #   MinLength: '1'
-  #   MaxLength: '64'
-  #   AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-  #   ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
-  # DBUser:
-  #   NoEcho: 'true'
-  #   Description: The WordPress database admin account username
-  #   Type: String
-  #   MinLength: '1'
-  #   MaxLength: '16'
-  #   AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
-  #   ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
-  # DBPassword:
-  #   NoEcho: 'true'
-  #   Description: The WordPress database admin account password
-  #   Type: String
-  #   MinLength: '8'
-  #   MaxLength: '41'
-  #   AllowedPattern: '[a-zA-Z0-9]*'
-  #   ConstraintDescription: must contain only alphanumeric characters.
-  # DBRootPassword:
-  #   NoEcho: 'true'
-  #   Description: MySQL root password
-  #   Type: String
-  #   MinLength: '8'
-  #   MaxLength: '41'
-  #   AllowedPattern: '[a-zA-Z0-9]*'
-  #   ConstraintDescription: must contain only alphanumeric characters.
+  DBInstanceID:
+    Default: mydbinstance
+    Description: My database instance
+    Type: String
+    MinLength: '1'
+    MaxLength: '63'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: >-
+      Must begin with a letter and must not end with a hyphen or contain two
+      consecutive hyphens.
+  DBName:
+    Default: wordpressdb
+    Description: The WordPress database name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBUser:
+    Default: admin
+    NoEcho: 'true'
+    Description: The WordPress database admin account username
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  DBPassword:
+    NoEcho: 'true'
+    Default: 12345678
+    Description: The WordPress database admin account password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+  DBRootPassword:
+    Default: 12345678
+    NoEcho: 'true'
+    Description: MySQL root password
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
 
 Resources:
   WebServer:
@@ -69,6 +82,28 @@ Resources:
         Ref: KeyName
       SecurityGroupIds:
         - sg-047e5bb2925cd354f
+  
+  DataBase:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceID
+      Engine: mysql
+      DBSubnetGroupName: my-db-subnet-gr
+      AllocatedStorage: 20
+      BackupRetentionPeriod: 0
+      DBInstanceClass: db.t2.micro
+      DBName: !Ref DBName
+      EnableIAMDatabaseAuthentication: true
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      MultiAZ: false
+      Port: 3306
+      PubliclyAccessible: false
+      StorageType: gp2
+      VPCSecurityGroups:
+        - sg-0150f2a159d3ca7af
+      PreferredMaintenanceWindow: mon:01:41-mon:02:11
+
 
 Outputs:
   WebsiteURL:
@@ -77,3 +112,12 @@ Outputs:
       - - !GetAtt 
           - WebServer
           - PublicDnsName
+  DBEndpoint:
+    Value: !Join
+      - ':'
+      - - !GetAtt
+            - DataBase
+            - Endpoint.Address
+        - !GetAtt
+            - DataBase
+            - Endpoint.Port
