@@ -3,13 +3,11 @@ apt-get -y update
 apt-get -y install wireguard
 apt-get -y install apache2
 apt-get -y install awscli
-mkdir -p /etc/wireguard
-cd /etc/wireguard
+
 # Generate priv and pub keys
 wg genkey > priv
 sudo chmod 700 priv
 cat priv | wg pubkey > pub
-wget CONF
 sed -i 's/privkeyhere/`cat priv`/' wg0.conf
 # Config firewall
 ufw allow 52888/udp
