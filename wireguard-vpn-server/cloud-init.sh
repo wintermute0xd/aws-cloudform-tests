@@ -8,7 +8,7 @@ apt-get -y install awscli
 wg genkey > priv
 sudo chmod 700 priv
 cat priv | wg pubkey > pub
-sed -i 's/privkeyhere/`cat priv`/' wg0.conf
+sed -i "s/privkeyhere/`cat priv`/" wg0.conf
 # Config firewall
 ufw allow 52888/udp
 ufw allow 22/tcp
@@ -17,7 +17,7 @@ ufw allow 80/tcp
 ufw disable
 echo 'y' | sudo ufw enable
 # Allow packet forwarding
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
+sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/" /etc/sysctl.conf
 sysctl -p
 # Enable wg service
 systemctl enable wg-quick@wg0.service
