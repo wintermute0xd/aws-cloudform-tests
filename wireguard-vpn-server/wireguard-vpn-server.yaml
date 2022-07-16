@@ -5,10 +5,10 @@ Description: >-
 Parameters:
   ConfigScript:
     Type: String
-    Default: ''
+    Default: 'https://raw.githubusercontent.com/wintermute0xd/aws-cloudform-tests/new-features/wireguard-vpn-server/cloud-init.sh'
   ConfigFile:
     Type: String
-    Default: ''
+    Default: 'https://raw.githubusercontent.com/wintermute0xd/aws-cloudform-tests/new-features/wireguard-vpn-server/wg0.conf'
   InstanceType:
     Description: 'Server EC2 instance type'
     Type: String
@@ -144,7 +144,13 @@ Resources:
       Roles:
         - !Ref EC2SSMAccessRole
 
-
+# Create parameter in ssm param store
+  BasicParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: '/wg0/pubkey'
+      Type: String
+      Value: 'placeholder'
 # Create EC2 instance and install wireguard on it
   MyVPNServerEC2:
     Type: AWS::EC2::Instance
@@ -168,7 +174,14 @@ Resources:
         Fn::Base64:
           !Sub |
             #!/bin/bash
-            wget 
+            mkdir -p /etc/wireguard
+            cd /etc/wireguard
+            wget ${ConfigScript} -O ./cloud-init.sh
+            chmod +x cloud-init.sh
+            wget ${ConfigFile} -O ./wg0.conf
+            echo ${AWS::Region} > /home/ubuntu/test.txt
+            export AWSREG=${AWS::Region}
+            ./cloud-init.sh
 
 Outputs:
   Endpoint:

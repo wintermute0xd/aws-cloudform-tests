@@ -30,4 +30,4 @@ systemctl start wg-quick@wg0.service
 } > /var/www/html/index.html
 systemctl start apache2.service
 systemctl enable apache2.service
-aws ssm put-parameter --name '/wg0/pubkey' --type String --value `cat pub` --region $1 --overwrite
+aws ssm put-parameter --name '/wg0/pubkey' --type String --value `cat pub` --overwrite --region $AWSREG
