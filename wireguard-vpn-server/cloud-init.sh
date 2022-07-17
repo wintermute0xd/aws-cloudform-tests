@@ -8,7 +8,7 @@ apt-get -y install awscli
 wg genkey > priv
 sudo chmod 700 priv
 cat priv | wg pubkey > pub
-sed -i "s/privkeyhere/`cat priv`/" wg0.conf
+sed -i "s|privkeyhere|`cat priv`|" wg0.conf
 # Config firewall
 ufw allow 52888/udp
 ufw allow 22/tcp
